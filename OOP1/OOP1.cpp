@@ -21,6 +21,22 @@ public:
     }
 };
 
+/* Flight{
+public:
+    Flight(int date, int p, const std::string& N, const std::string& avail) : number(num), price(p), Name(N), availability(avail) {}
+    int number;
+    int price;
+    std::string Name;
+    std::string availability;
+
+    void SetName(std::string NameNew) {
+        Name = NameNew;
+    }
+    void SetAv(std::string Av) {
+        availability = Av;
+    }
+};
+*/
 class FileConfig {
 public:
     FileConfig() {}
@@ -100,6 +116,7 @@ public:
 private:
     std::map<std::string, std::vector<std::string>> config;
     std::map<std::string, std::vector<Seat>> seatsAvailability;
+    std::vector<std::string> myVector = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "O", "P", "Q","R", "S","T","V","X","Y","Z"};
 
 
     std::vector<std::string> splitString(const std::string& str, const std::string& delimiter) const {
