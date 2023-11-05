@@ -5,13 +5,15 @@
 #include <map>
 #include <vector>
 #include <iterator>
+#include <random>
 class Seat {
 public:
-    Seat(int num, int p, const std::string& N, const std::string& avail) : number(num), price(p), Name(N), availability(avail) {}
+    Seat(int num, std::string p,  std::string N,  std::string avail,  std::string id) : number(num), price(p), Name(N), availability(avail), ID(id) {}
     int number;
-    int price;
+    std::string price;
     std::string Name;
     std::string availability;
+    std::string ID;
 
     void SetName(std::string NameNew) {
         Name = NameNew;
@@ -21,22 +23,13 @@ public:
     }
 };
 
-/* Flight{
+class Flight {
 public:
-    Flight(int date, int p, const std::string& N, const std::string& avail) : number(num), price(p), Name(N), availability(avail) {}
-    int number;
-    int price;
-    std::string Name;
-    std::string availability;
-
-    void SetName(std::string NameNew) {
-        Name = NameNew;
-    }
-    void SetAv(std::string Av) {
-        availability = Av;
-    }
+    Flight(std::string date, std::string number, std::vector<Seat> S) : FDate(date), No(number), seats(S) {}
+    std::string FDate;
+    std::string No;
+    std::vector<Seat> seats;
 };
-*/
 class FileConfig {
 public:
     FileConfig() {}
@@ -44,110 +37,213 @@ public:
     void ReadReturn(const std::string& name) {
         std::ifstream file(name);
         if (!file.is_open()) {
-            std::cerr << "Failed to open the file." << std::endl;
+            std::cout << "Failed to open the file." << std::endl;
             return;
         }
 
         std::string line;
         while (getline(file, line)) {
             std::istringstream iss(line);
-            std::string date, flightNumber, token;
-            int seatCount;
-            iss >> date >> flightNumber >> seatCount;
-
-            std::vector<std::string> data = { date, flightNumber, std::to_string(seatCount) };
-
-            while (iss >> token) {
-                data.push_back(token);
-            }
+            std::string date;
+            std::string flightNumber;
+            std::string seatCount;
+            std::string firstInter;
+            std::string firstPrice;
+            std::string secondInt;
+            std::string secondPrice;
+            iss >> date;
+            iss >> flightNumber; 
+            iss >> seatCount;
+            iss >> firstInter;
+            iss >> firstPrice;
+            iss >> secondInt;
+            iss >> secondPrice;
+            std::vector<std::string> data = { date, flightNumber, seatCount,firstInter,firstPrice,secondInt,secondPrice };
 
             config[flightNumber] = std::move(data);
-
-            initializeSeatsAvailability(flightNumber);
-            std::cout << "Flight Number: " << flightNumber << ", Data: ";
-            for (const auto& item : config[flightNumber]) {
-                std::cout << item << " ";
+            std::string informaString = "";
+            SetSeats(flightNumber);
+            for (int i = 0; i < config[flightNumber].size(); i++)
+            {
+               informaString+= config[flightNumber][i]+" ";
             }
-            std::cout << std::endl;
+            std::cout << informaString << std::endl;
+
+           
         }
 
         file.close();
     }
+    void SetSeats(const std::string& flightNumber) {
+        auto el = config.find(flightNumber);
+        std::vector<std::string>& flightData = el->second;
+        std::vector<Seat> seatsFlight;
 
-    int getTotalSeats(const std::string& flightNumber) const {
-        auto it = config.find(flightNumber);
-        if (it == config.end()) {
-            std::cerr << "Flight not found." << std::endl;
-            return -1;
-        }
+        int seatCountPerRow = std::stoi(flightData[2]);
+        int row = 1;
+        int seatRow = 0;
 
-        const std::vector<std::string>& flightData = it->second;
-        int totalSeats = 0;
-        for (size_t i = 3; i < flightData.size(); i += 2) { // Start from the fourth element and skip prices
-            std::vector<std::string> tokens = splitString(flightData[i], "-");
+        for (size_t i = 3; i < flightData.size(); i += 2) {
+            std::vector<std::string> tokens = splitString(flightData[i]);
             int start = std::stoi(tokens[0]);
             int end = std::stoi(tokens[1]);
-            totalSeats += end - start + 1;
+            std::string priceStr = flightData[i + 1];
+            
+
+            for (int seatNumber = start; seatNumber <= end; ++seatNumber) {
+                if (seatRow >= seatCountPerRow) {
+                    row++;
+                    seatRow = 0;
+                }
+                std::string seatName = std::to_string(row) + Alphabet[seatRow];
+                seatsFlight.emplace_back(seatNumber, priceStr, seatName, "Free","");
+
+                seatRow++;
+            }
         }
-        return totalSeats;
+        flights.emplace_back(flightData[0], flightNumber, seatsFlight);
     }
 
-    void initializeSeatsAvailability(const std::string& flightNumber) {
-        auto it = config.find(flightNumber);
-        if (it == config.end()) {
-            std::cerr << "Flight not found." << std::endl;
-            return;
-        }
 
-        const std::vector<std::string>& flightData = it->second;
-        for (size_t i = 3; i < flightData.size(); i += 2) { // Start from the fourth element and skip prices
-            std::vector<std::string> tokens = splitString(flightData[i], "-");
-            int start = std::stoi(tokens[0]);
-            int end = std::stoi(tokens[1]);
-            int price = std::stoi(flightData[i + 1].substr(0, flightData[i + 1].size() - 1)); // remove '$' and convert to int
-            for (int seat = start; seat <= end; ++seat) {
-                seatsAvailability[flightNumber].push_back(Seat(seat, price,"", "Free"));
+
+    std::vector<Flight> getFlights() {
+        return flights;
+    }
+
+private:
+    std::map<std::string, std::vector<std::string>> config;
+    std::vector<std::string> Alphabet = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "O", "P", "Q","R", "S","T","V","X","Y","Z"};
+    std::vector<Flight> flights;
+    std::vector<std::string> splitString(const std::string& str) {
+        std::vector<std::string> result;
+        int DelimPos = str.find('-');
+        result.push_back(str.substr(0, DelimPos));
+        result.push_back(str.substr(DelimPos + 1)); 
+        
+        return result;
+    }
+
+};
+
+class FlightManager {
+    FileConfig config; 
+    std::vector<Flight> FlighVec;
+    std::string FPath; 
+
+public:
+    FlightManager(const std::string& path) : FPath(path) {
+        config.ReadReturn(FPath);
+        FlighVec = config.getFlights(); 
+    }
+
+
+    void Check(std::string date, std::string No) {
+       
+        for (int j = 0; j < FlighVec.size(); j++) {
+          
+            if (FlighVec[j].FDate == date && FlighVec[j].No == No) {
+                for (int i = 0; i < FlighVec[j].seats.size(); i++)
+                {
+                    if (FlighVec[j].seats[i].availability == "Free") {
+                        std::cout << FlighVec[j].seats[i].Name << ", " << FlighVec[j].seats[i].price << std::endl;
+                    }
+                    
+                }
             }
         }
     }
-    std::map<std::string, std::vector<Seat>> print_Avail() {
-        return seatsAvailability;
+
+    void Book(std::string Date, std::string FlightNo, std::string place, std::string name) {
+        for (int j = 0; j < FlighVec.size(); j++) {
+            if (FlighVec[j].FDate == Date && FlighVec[j].No == FlightNo) {
+                for (int i = 0; i < FlighVec[j].seats.size(); i++)
+                {
+                    if (FlighVec[j].seats[i].availability == "Free" && FlighVec[j].seats[i].Name == place) {
+                        FlighVec[j].seats[i].availability = name;
+                        FlighVec[j].seats[i].ID = GenerateId();
+                        std::cout << "----------" << std::endl;
+                        std::cout <<"confirmed with ID " << FlighVec[j].seats[i].ID << std::endl;
+                    }
+
+                }
+            }
+        }
+    }
+
+    void returnTicket(std::string ID) {
+        for (int j = 0; j < FlighVec.size(); j++) {
+            for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            {
+                if (FlighVec[j].seats[i].ID == ID) {
+                    std::cout << "----------" << std::endl;
+                    std::cout << FlighVec[j].seats[i].price << "returned to" << FlighVec[j].seats[i].availability << std::endl;
+                    FlighVec[j].seats[i].availability = "Free";
+                    FlighVec[j].seats[i].ID.clear();
+                
+                }
+            }
+        
+        
+        }
+    }
+
+
+    void View(std::string ID) {
+        for (int j = 0; j < FlighVec.size(); j++) {
+            for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            {
+                if (FlighVec[j].seats[i].ID == ID) {
+                    std::cout << "----------" << std::endl;
+                    std::cout << FlighVec[j].seats[i].price << std::endl;
+                    std::cout << FlighVec[j].No << std::endl;
+                    std::cout << FlighVec[j].FDate << std::endl;
+                    std::cout << FlighVec[j].seats[i].Name << std::endl;
+
+                }
+            }
+
+
+        }
+    }
+
+    void ViewUser(std::string Username) {
+        for (int j = 0; j < FlighVec.size(); j++) {
+            for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            {
+                if (FlighVec[j].seats[i].availability == Username) {
+                    std::cout << "----------" << std::endl;
+                    std::cout<<"FlightNO:" << FlighVec[j].No <<",Date: " << FlighVec[j].FDate <<", seat:"<<FlighVec[j].seats[i].Name << ", price:" << FlighVec[j].seats[i].price <<std::endl;
+                }
+            }
+
+
+        }
     }
 private:
-    std::map<std::string, std::vector<std::string>> config;
-    std::map<std::string, std::vector<Seat>> seatsAvailability;
-    std::vector<std::string> myVector = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "O", "P", "Q","R", "S","T","V","X","Y","Z"};
+    std::mt19937 rng;
+    std::string GenerateId() {
+        std::string result = "";
+        std::uniform_int_distribution<int> dist(1, 9);
 
-
-    std::vector<std::string> splitString(const std::string& str, const std::string& delimiter) const {
-        std::vector<std::string> result;
-        size_t start = 0, end = str.find(delimiter);
-        while (end != std::string::npos) {
-            result.push_back(str.substr(start, end - start));
-            start = end + delimiter.length();
-            end = str.find(delimiter, start);
+        for (int i = 0; i < 15; i++) {
+            int iRand = dist(rng);
+            result += std::to_string(iRand);
         }
-        result.push_back(str.substr(start, end));
         return result;
     }
+
 };
 
 int main() {
-    FileConfig config;
-    config.ReadReturn("C:/Users/Давід/source/repos/OOP1/OOP1/config.txt.txt");
+    FlightManager man("C:/Users/Давід/source/repos/OOP1/OOP1/config.txt.txt");
+    man.Check("11.12.2022", "FQ12");
+    std::cout << "AAAAAAA----asasxasdx------ssssssss-dsd-------ddvvvvvvvv------------" << std::endl;
+    man.Book("11.12.2022", "FQ12", "1A", "Vasya Pupkin");
+    man.Book("11.12.2022", "FQ12", "2A", "Tanya Pupkin");
+    man.ViewUser("Vasya Pupkin");
+    std::cout << "--eeeeeee--------ssssssss------ggggggggggggg-----xxxx---dsvsds------" << std::endl;
+    man.Check("11.12.2022", "FQ12");
 
-
-    std::map<std::string, std::vector<Seat>> r=config.print_Avail();
-    for (const auto& pair : r) {
-        std::cout << "Flight Number: " << pair.first << std::endl;
-        for (const Seat& seat : pair.second) {
-            std::cout << "Seat Number: " << seat.number
-                << ", Price: " << seat.price
-                << "$, Availability: " << seat.availability
-                << std::endl;
-        }
-        std::cout << "------------------------------------" << std::endl;
-    }
-
+    //std::cout << GenerateId() << std::endl;
     return 0;
 }
