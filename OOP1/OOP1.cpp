@@ -4,16 +4,13 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <limits> 
 #include <iterator>
 #include <random>
 class Seat {
 public:
     Seat(int num, std::string p,  std::string N,  std::string avail,  std::string id) : number(num), price(p), Name(N), availability(avail), ID(id) {}
-    int number;
-    std::string price;
-    std::string Name;
-    std::string availability;
-    std::string ID;
+    
 
     void SetName(std::string NameNew) {
         Name = NameNew;
@@ -21,14 +18,52 @@ public:
     void SetAv(std::string Av) {
         availability = Av;
     }
+    void SetId(std::string newId) {
+        ID = newId;
+    }
+
+    std::string getName() {
+        return Name;
+    }
+    std::string getPrice() {
+        return price;
+    }
+    std::string getAvail() {
+        return availability;
+    }
+    std::string getID() {
+        return ID;
+    }
+private:
+    int number;
+    std::string price;
+    std::string Name;
+    std::string availability;
+    std::string ID;
+
 };
 
 class Flight {
 public:
     Flight(std::string date, std::string number, std::vector<Seat> S) : FDate(date), No(number), seats(S) {}
+   
+
+    std::string getFdate() {
+        return FDate;
+    }
+    std::string getNo() {
+        return No;
+    }
+    std::vector<Seat>& getSeats() {
+        return seats;
+    }
+
+private:
     std::string FDate;
     std::string No;
     std::vector<Seat> seats;
+
+    
 };
 class FileConfig {
 public:
@@ -131,21 +166,21 @@ class FlightManager {
     std::string FPath; 
 
 public:
-    FlightManager(const std::string& path) : FPath(path) {
+    FlightManager(std::string path) : FPath(path) {
         config.ReadReturn(FPath);
         FlighVec = config.getFlights(); 
     }
 
 
-    void Check(std::string date, std::string No) {
+    void Check(std::string& date, std::string& No) {
        
         for (int j = 0; j < FlighVec.size(); j++) {
           
-            if (FlighVec[j].FDate == date && FlighVec[j].No == No) {
-                for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            if (FlighVec[j].getFdate() == date && FlighVec[j].getNo() == No) {
+                for (int i = 0; i < FlighVec[j].getSeats().size(); i++)
                 {
-                    if (FlighVec[j].seats[i].availability == "Free") {
-                        std::cout << FlighVec[j].seats[i].Name << ", " << FlighVec[j].seats[i].price << std::endl;
+                    if (FlighVec[j].getSeats()[i].getAvail() == "Free") {
+                        std::cout << FlighVec[j].getSeats()[i].getName() << ", " << FlighVec[j].getSeats()[i].getPrice() << std::endl;
                     }
                     
                 }
@@ -153,16 +188,16 @@ public:
         }
     }
 
-    void Book(std::string Date, std::string FlightNo, std::string place, std::string name) {
+    void Book(std::string& Date, std::string& FlightNo, std::string& place, std::string& name) {
         for (int j = 0; j < FlighVec.size(); j++) {
-            if (FlighVec[j].FDate == Date && FlighVec[j].No == FlightNo) {
-                for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            if (FlighVec[j].getFdate() == Date && FlighVec[j].getNo() == FlightNo) {
+                for (int i = 0; i < FlighVec[j].getSeats().size(); i++)
                 {
-                    if (FlighVec[j].seats[i].availability == "Free" && FlighVec[j].seats[i].Name == place) {
-                        FlighVec[j].seats[i].availability = name;
-                        FlighVec[j].seats[i].ID = GenerateId();
+                    if (FlighVec[j].getSeats()[i].getAvail() == "Free" && FlighVec[j].getSeats()[i].getName() == place) {
+                        FlighVec[j].getSeats()[i].SetAv(name);
+                        FlighVec[j].getSeats()[i].SetId(GenerateId());
                         std::cout << "----------" << std::endl;
-                        std::cout <<"confirmed with ID " << FlighVec[j].seats[i].ID << std::endl;
+                        std::cout <<"confirmed with ID " << FlighVec[j].getSeats()[i].getID() << std::endl;
                     }
 
                 }
@@ -170,15 +205,15 @@ public:
         }
     }
 
-    void returnTicket(std::string ID) {
+    void returnTicket(std::string& ID) {
         for (int j = 0; j < FlighVec.size(); j++) {
-            for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            for (int i = 0; i < FlighVec[j].getSeats().size(); i++)
             {
-                if (FlighVec[j].seats[i].ID == ID) {
+                if (FlighVec[j].getSeats()[i].getID() == ID) {
                     std::cout << "----------" << std::endl;
-                    std::cout << FlighVec[j].seats[i].price << "returned to" << FlighVec[j].seats[i].availability << std::endl;
-                    FlighVec[j].seats[i].availability = "Free";
-                    FlighVec[j].seats[i].ID.clear();
+                    std::cout << FlighVec[j].getSeats()[i].getPrice() << "returned to" << FlighVec[j].getSeats()[i].getAvail() << std::endl;
+                    FlighVec[j].getSeats()[i].SetAv("Free");
+                    FlighVec[j].getSeats()[i].SetId("");
                 
                 }
             }
@@ -188,17 +223,18 @@ public:
     }
 
 
-    void View(std::string ID) {
+    void View(std::string& ID) {
         for (int j = 0; j < FlighVec.size(); j++) {
-            for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            for (int i = 0; i < FlighVec[j].getSeats().size(); i++)
             {
-                if (FlighVec[j].seats[i].ID == ID) {
+                if (FlighVec[j].getSeats()[i].getID() == ID) {
                     std::cout << "----------" << std::endl;
-                    std::cout << FlighVec[j].seats[i].price << std::endl;
-                    std::cout << FlighVec[j].No << std::endl;
-                    std::cout << FlighVec[j].FDate << std::endl;
-                    std::cout << FlighVec[j].seats[i].Name << std::endl;
-
+                    std::cout << FlighVec[j].getSeats()[i].getID() << std::endl;
+                    std::cout << FlighVec[j].getNo() << std::endl;
+                    std::cout << FlighVec[j].getFdate() << std::endl;
+                    std::cout << FlighVec[j].getSeats()[i].getName() << std::endl;
+                    std::cout << FlighVec[j].getSeats()[i].getAvail() << std::endl;
+                    std::cout << FlighVec[j].getSeats()[i].getPrice() << std::endl;
                 }
             }
 
@@ -206,13 +242,13 @@ public:
         }
     }
 
-    void ViewUser(std::string Username) {
+    void ViewUser(std::string& Username) {
         for (int j = 0; j < FlighVec.size(); j++) {
-            for (int i = 0; i < FlighVec[j].seats.size(); i++)
+            for (int i = 0; i < FlighVec[j].getSeats().size(); i++)
             {
-                if (FlighVec[j].seats[i].availability == Username) {
+                if (FlighVec[j].getSeats()[i].getAvail() == Username) {
                     std::cout << "----------" << std::endl;
-                    std::cout<<"FlightNO:" << FlighVec[j].No <<",Date: " << FlighVec[j].FDate <<", seat:"<<FlighVec[j].seats[i].Name << ", price:" << FlighVec[j].seats[i].price <<std::endl;
+                    std::cout<<"FlightNO:" << FlighVec[j].getNo() <<",Date: " << FlighVec[j].getFdate() <<", seat:"<<FlighVec[j].getSeats()[i].getName() << ", price:" << FlighVec[j].getSeats()[i].getPrice() <<std::endl;
                 }
             }
 
@@ -233,17 +269,83 @@ private:
     }
 
 };
+class Command {
+    FlightManager flightManager;
 
+public:
+    Command(std::string path) : flightManager(path) {}
+    void commandLoop() {
+
+        std::cout << "1-check, 2-book, 3-return, 4-viewId, 5-Username\n";
+       
+        while (true) {
+            int choice;
+            std::cin >> choice;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            switch (choice)
+            {
+            case 1:
+            {
+                std::string Date;
+                std::string No;
+                std::cin >> Date;
+                std::cin >> No;
+                flightManager.Check(Date,No);
+                break;
+            }
+            case 2: {
+                std::string Date;
+                std::string No;
+                std::string Place;
+                std::string Name;
+                std::cin >> Date;
+                std::cin >> No;
+                std::cin >> Place;
+                std::cin >> Name;
+                flightManager.Book(Date, No, Place,Name);
+                break;
+            }
+
+            case 3: {
+                std::string ID;
+                std::cin >> ID;
+                flightManager.returnTicket(ID);
+                break;
+            }
+            case 4: {
+                std::string ID2;
+                std::cin >> ID2;
+                flightManager.View(ID2);
+                break;
+            }
+            case 5: {
+                std::string UserName;
+                std::cin >> UserName;
+                flightManager.View(UserName);
+                break;
+            }
+      
+            default:
+                std::cout << "Wrong numba\n";
+                break;
+            }
+        }
+
+    }
+};
 int main() {
-    FlightManager man("C:/Users/Давід/source/repos/OOP1/OOP1/config.txt.txt");
+    Command com("C:/Users/Давід/source/repos/OOP1/OOP1/config.txt.txt");
+    std::cout << "AAAAAAA----asasxasdx------ssssssss-dsd-------ddvvvvvvvv------------" << std::endl;
+    com.commandLoop();
+    /*FlightManager man("C:/Users/Давід/source/repos/OOP1/OOP1/config.txt.txt");
     man.Check("11.12.2022", "FQ12");
     std::cout << "AAAAAAA----asasxasdx------ssssssss-dsd-------ddvvvvvvvv------------" << std::endl;
-    man.Book("11.12.2022", "FQ12", "1A", "Vasya Pupkin");
-    man.Book("11.12.2022", "FQ12", "2A", "Tanya Pupkin");
-    man.ViewUser("Vasya Pupkin");
-    std::cout << "--eeeeeee--------ssssssss------ggggggggggggg-----xxxx---dsvsds------" << std::endl;
+    man.Book("11.12.2022", "FQ12", "1A", "NPC1");
+    man.Book("11.12.2022", "FQ12", "2A", "NPC2");
+    man.ViewUser("NPC1");
+    std::cout << "--eeeeeee--------ssssssss------ggggggggggggg-----xxxx---dsvsds---2222---" << std::endl;
     man.Check("11.12.2022", "FQ12");
-
+    */
     //std::cout << GenerateId() << std::endl;
     return 0;
 }
