@@ -81,29 +81,26 @@ public:
             std::string date;
             std::string flightNumber;
             std::string seatCount;
-            std::string firstInter;
-            std::string firstPrice;
-            std::string secondInt;
-            std::string secondPrice;
             iss >> date;
-            iss >> flightNumber; 
-            iss >> seatCount;
-            iss >> firstInter;
-            iss >> firstPrice;
-            iss >> secondInt;
-            iss >> secondPrice;
-            std::vector<std::string> data = { date, flightNumber, seatCount,firstInter,firstPrice,secondInt,secondPrice };
+            iss >> flightNumber;
+            iss>> seatCount;
+            std::vector<std::string> data = { date, flightNumber, seatCount };
+            std::string interval, price;
+
+            while (iss >> interval >> price) {
+                data.push_back(interval);
+                data.push_back(price);
+            }
 
             config[flightNumber] = std::move(data);
+            SetSeats(flightNumber); 
+
             std::string informaString = "";
-            SetSeats(flightNumber);
             for (int i = 0; i < config[flightNumber].size(); i++)
             {
-               informaString+= config[flightNumber][i]+" ";
+                informaString += config[flightNumber][i] + " ";
             }
             std::cout << informaString << std::endl;
-
-           
         }
 
         file.close();
@@ -334,7 +331,7 @@ public:
 };
 int main() {
     Command com("C:/Users/Давід/source/repos/OOP1/OOP1/config.txt.txt");
-    std::cout << "AAAAAAA----asasxasdx------ssssssss-dsd-------ddvvvvvvvv------------" << std::endl;
+    std::cout << "AAAAAAA----asasxasdx------ssss666666666ssss-dsd-------ddvvvvvvvv------------" << std::endl;
     com.commandLoop();
     /*FlightManager man("C:/Users/Давід/source/repos/OOP1/OOP1/config.txt.txt");
     man.Check("11.12.2022", "FQ12");
