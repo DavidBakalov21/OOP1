@@ -9,7 +9,7 @@
 #include <random>
 class Seat {
 public:
-    Seat(int num, std::string p,  std::string N,  std::string avail,  std::string id) : number(num), price(p), Name(N), availability(avail), ID(id) {}
+    Seat(std::string p,  std::string N,  std::string avail,  std::string id) : price(p), Name(N), availability(avail), ID(id) {}
     
 
     void SetName(std::string NameNew) {
@@ -35,7 +35,6 @@ public:
         return ID;
     }
 private:
-    int number;
     std::string price;
     std::string Name;
     std::string availability;
@@ -125,13 +124,13 @@ public:
             std::string priceStr = flightData[i + 1];
             
 
-            for (int seatNumber = start; seatNumber <= end; ++seatNumber) {
+            for (int seatNumber = start; seatNumber <= end; seatNumber++) {
                 if (seatRow >= seatCountPerRow) {
                     row++;
                     seatRow = 0;
                 }
                 std::string seatName = std::to_string(row) + Alphabet[seatRow];
-                seatsFlight.emplace_back(seatNumber, priceStr, seatName, "Free","");
+                seatsFlight.emplace_back(priceStr, seatName, "Free","");
 
                 seatRow++;
             }
@@ -321,7 +320,7 @@ public:
             case 5: {
                 std::string UserName;
                 std::cin >> UserName;
-                flightManager.View(UserName);
+                flightManager.ViewUser(UserName);
                 break;
             }
       
