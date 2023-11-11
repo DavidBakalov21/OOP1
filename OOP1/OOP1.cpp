@@ -7,10 +7,23 @@
 #include <limits> 
 #include <iterator>
 #include <random>
+
+enum CLI
+{
+    CHECK = 1,
+    BOOK = 2,
+    RETURN = 3,
+    VIEW=4,
+    ViewUser=5
+   
+};
+
 class Seat {
 public:
     Seat(std::string p,  std::string N,  std::string avail,  std::string id) : price(p), Name(N), availability(avail), ID(id) {}
-    
+    Seat(const Seat& other) : price(other.price), Name(other.Name), availability(other.availability), ID(other.ID) {};
+    Seat(Seat&& other) : price(std::move(other.price)), Name(std::move(other.Name)), availability(std::move(other.availability)), ID(std::move(other.ID)) {
+    }
 
     void SetName(std::string NameNew) {
         Name = NameNew;
@@ -280,7 +293,7 @@ public:
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             switch (choice)
             {
-            case 1:
+            case CHECK:
             {
                 std::string Date;
                 std::string No;
@@ -289,7 +302,7 @@ public:
                 flightManager.Check(Date,No);
                 break;
             }
-            case 2: {
+            case BOOK: {
                 std::string Date;
                 std::string No;
                 std::string Place;
@@ -302,19 +315,19 @@ public:
                 break;
             }
 
-            case 3: {
+            case RETURN: {
                 std::string ID;
                 std::cin >> ID;
                 flightManager.returnTicket(ID);
                 break;
             }
-            case 4: {
+            case VIEW: {
                 std::string ID2;
                 std::cin >> ID2;
                 flightManager.View(ID2);
                 break;
             }
-            case 5: {
+            case ViewUser: {
                 std::string UserName;
                 std::cin >> UserName;
                 flightManager.ViewUser(UserName);
